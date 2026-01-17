@@ -1,4 +1,4 @@
-export const sendMessage = () => {
+export const sendMessageUI = () => {
   const composer =
     document.querySelector<HTMLTextAreaElement>("[data-composer]");
   const messagesContainer = document.querySelector(".messages");
