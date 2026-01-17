@@ -1,7 +1,8 @@
-import { initMessages } from "./messages/message";
+import { initAiChat } from "./features/ai-chat";
 
 const app = document.querySelector<HTMLElement>("[data-app]");
-const menuToggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+const menuToggle =
+  document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
 const scrim = document.querySelector<HTMLElement>("[data-scrim]");
 const composer = document.querySelector<HTMLTextAreaElement>("[data-composer]");
 
@@ -34,4 +35,4 @@ const resizeComposer = () => {
 composer?.addEventListener("input", resizeComposer);
 window.addEventListener("load", resizeComposer);
 
-initMessages();
+initAiChat();
