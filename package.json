@@ -1,0 +1,17 @@
+{
+  "name": "agent-front",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html",
+    "clean": "rm -rf dist .parcel-cache"
+  },
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.16.3",
+    "parcel": "^2.12.0",
+    "sass": "^1.77.0",
+    "typescript": "^5.4.0"
+  }
+}
