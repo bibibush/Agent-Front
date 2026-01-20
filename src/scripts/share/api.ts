@@ -80,6 +80,12 @@ export const requestAPI = async <T>(
     body: requestBody,
   });
 
+  if (!response.ok) {
+    const errorResponseData = await response.json();
+    const detail = errorResponseData?.detail || "Unknown error";
+    throw new Error(detail);
+  }
+
   const data = (await response.json()) as T;
   return _snakeToCamelDeep(data);
 };
