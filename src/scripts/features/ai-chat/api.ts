@@ -1,16 +1,15 @@
 import { requestAPI, requestStreamingAPI } from "../../share/api";
 import { ResponseAPI } from "../../share/type";
 import { OpenAIResponseAPIModel } from "./type";
+import { OPENAI_RESPONSE_PREFIX } from "../../share/var";
 
 export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
   try {
-    const bodyData = JSON.stringify(data);
-
     const response = await requestAPI<ResponseAPI<string>>(
       `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/text`,
       {
         method: "POST",
-        body: bodyData,
+        body: data,
       },
     );
 
@@ -22,12 +21,11 @@ export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
 
 export async function* getOpenaiResponseSSE(data: OpenAIResponseAPIModel) {
   try {
-    const bodyData = JSON.stringify(data);
     const stream = requestStreamingAPI(
       `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/stream`,
       {
         method: "POST",
-        body: bodyData,
+        body: data,
       },
     );
 

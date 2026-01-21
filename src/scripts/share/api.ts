@@ -47,7 +47,7 @@ export const _camelToSnakeDeep = <T>(input: T): T => {
 type RequestApiOptions = {
   method?: string;
   params?: JsonObject;
-  body?: JsonValue;
+  body?: unknown;
   headers?: HeadersInit;
 };
 

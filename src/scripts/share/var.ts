@@ -1,1 +1,1 @@
-const OPENAI_RESPONSE_PREFIX = "openai_response";
+export const OPENAI_RESPONSE_PREFIX = "openai-response";
