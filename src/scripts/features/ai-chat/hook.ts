@@ -1,5 +1,5 @@
-import { getOpenaiResponse } from "./api";
-import { receiveMessage, sendMessageUI } from "./ui";
+import { getOpenaiResponse, getOpenaiResponseSSE } from "./api";
+import { receiveMessage, receiveMessageSSE, sendMessageUI } from "./ui";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -26,5 +26,39 @@ export const useSendMessage = async () => {
     receiveMessage("죄송합니다. 응답을 받는 중 오류가 발생했습니다.");
   } finally {
     if (IS_DEV) console.timeEnd("ai-chat-response");
+  }
+};
+
+export const useSendMessageSSE = async () => {
+  if (IS_DEV) console.time("ai-chat-response-sse");
+
+  const composer =
+    document.querySelector<HTMLTextAreaElement>("[data-composer]");
+  const text = composer?.value.trim();
+
+  if (!text) return;
+
+  sendMessageUI();
+
+  try {
+    const stream = getOpenaiResponseSSE({
+      model: "gpt-5.2",
+      input: text,
+      stream: true,
+    });
+
+    let aiResponse = "";
+
+    for await (const chunk of stream) {
+      aiResponse += chunk;
+      receiveMessageSSE(aiResponse);
+    }
+
+    receiveMessageSSE(aiResponse, true);
+  } catch (error) {
+    console.error("Failed to get AI response via SSE:", error);
+    receiveMessage("죄송합니다. 응답을 받는 중 오류가 발생했습니다.");
+  } finally {
+    if (IS_DEV) console.timeEnd("ai-chat-response-sse");
   }
 };

@@ -42,3 +42,37 @@ export const receiveMessage = (text: string) => {
   messagesContainer.appendChild(message);
   message.scrollIntoView({ behavior: "smooth" });
 };
+
+export const receiveMessageSSE = (text: string, done = false) => {
+  const messagesContainer = document.querySelector(".messages");
+  if (!messagesContainer) return;
+
+  let message = messagesContainer.querySelector<HTMLElement>(
+    "[data-ai-streaming='true']"
+  );
+
+  if (!message) {
+    message = document.createElement("article");
+    message.className = "message assistant";
+    message.dataset.aiStreaming = "true";
+    message.innerHTML = `
+      <div class="message-meta">
+        <span class="badge">AI</span>
+      </div>
+      <div class="message-body">
+        <p style="white-space: pre-wrap;"></p>
+      </div>
+    `;
+
+    messagesContainer.appendChild(message);
+  }
+
+  const body = message.querySelector("p");
+  if (body) body.textContent = text;
+
+  if (done) {
+    delete message.dataset.aiStreaming;
+  }
+
+  message.scrollIntoView({ behavior: "smooth" });
+};
