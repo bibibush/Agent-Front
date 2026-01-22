@@ -22,7 +22,7 @@ export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
 export async function* getOpenaiResponseSSE(data: OpenAIResponseAPIModel) {
   try {
     const stream = requestStreamingAPI(
-      `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/stream`,
+      `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/sse`,
       {
         method: "POST",
         body: data,
