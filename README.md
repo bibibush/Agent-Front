@@ -14,3 +14,8 @@
 > 백엔드 구조는 클린 아키텍처를 적용 했습니다.
 >
 > 백엔드 repo: https://github.com/bibibush/AgentOps
+
+## 사용 기술
+
+- html, css, typescript
+- parcel
