@@ -4,7 +4,7 @@
 
 > openai api, openai agents sdk를 활용한 ai서비스를 구현했습니다.
 >
-> 이 웹사이트는 채팅 UI로 구현되어 있고, 에이전트에 채팅을 걸면 stream 방식으로 답변을 내려주는 > 기능이 구현되어 있습니다.
+> 이 웹사이트는 채팅 UI로 구현되어 있고, 에이전트에 채팅을 걸면 stream 방식으로 답변을 내려주는 기능이 구현되어 있습니다.
 >
 > 프론트엔드는 html, scss, typescript로 구성된 일반적인 ssg 방식의 프로젝트 형태를 띄고 있고, 번들링 라이브러리로는 parcel을 선택했습니다.
 >
@@ -43,3 +43,167 @@
 │           └─ type.ts      # AI 요청 타입 정의
 └─ package.json
 ```
+
+## 핵심 로직
+
+<details>
+  <summary><b>FSD 패턴 적용</b></summary>
+
+### 1) FSD 패턴: 공통 로직과 채팅 로직 분리
+
+- `src/scripts/share`: 전역 비즈니스 로직(공통 타입/요청/상수)
+- `src/scripts/features/ai-chat`: 채팅 도메인 로직(API 호출, UI 렌더링)
+
+### 2) 공통 요청 유틸 (camelCase ↔ snake_case)
+
+`src/scripts/share/api.ts` 에서 요청은 `snake_case`, 응답은 `camelCase` 로 자동 변환하도록 fetch 를 감쌉니다.
+
+```ts
+export const requestAPI = async <T>(
+  url: string,
+  { method = "GET", params, body, headers }: RequestApiOptions = {},
+): Promise<T> => {
+  const requestUrl = new URL(url, window.location.origin);
+
+  if (params) {
+    const snakeParams = _camelToSnakeDeep(params) as JsonObject;
+    Object.entries(snakeParams).forEach(([key, value]) => {
+      requestUrl.searchParams.set(key, String(value));
+    });
+  }
+
+  const hasBody = body !== undefined && body !== null;
+  const requestBody = hasBody
+    ? JSON.stringify(_camelToSnakeDeep(body))
+    : undefined;
+
+  const response = await fetch(requestUrl.toString(), {
+    method,
+    headers,
+    body: requestBody,
+  });
+
+  const data = (await response.json()) as T;
+  return _snakeToCamelDeep(data);
+};
+```
+
+### 3) 채팅 도메인 API 호출
+
+`src/scripts/features/ai-chat/api.ts` 에서는 위 공통 요청 유틸을 가져와 실제 요청 함수를 구성합니다.
+
+```ts
+import { requestAPI, requestStreamingAPI } from "../../share/api";
+import { OPENAI_RESPONSE_PREFIX } from "../../share/var";
+
+export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
+  const response = await requestAPI<ResponseAPI<string>>(
+    `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/text`,
+    { method: "POST", body: data },
+  );
+  return response;
+}
+
+export async function* getOpenaiResponseSSE(data: OpenAIResponseAPIModel) {
+  const stream = requestStreamingAPI(
+    `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/sse`,
+    { method: "POST", body: data },
+  );
+
+  for await (const chunk of stream) {
+    yield chunk;
+  }
+}
+```
+
+### 4) 동적 채팅 UI 관리
+
+`src/scripts/features/ai-chat/ui.ts` 에서 사용자/AI 메시지를 DOM 으로 생성하고,
+스트리밍 응답은 동일한 엘리먼트를 갱신합니다.
+
+```ts
+export const sendMessageUI = () => {
+  const composer =
+    document.querySelector<HTMLTextAreaElement>("[data-composer]");
+  const messagesContainer = document.querySelector(".messages");
+
+  const text = composer?.value.trim();
+  if (!text || !messagesContainer || !composer) return;
+
+  const message = document.createElement("article");
+  message.className = "message user";
+  message.innerHTML = `
+    <div class="message-meta">
+      <span class="badge">나</span>
+    </div>
+    <div class="message-body">
+      <p style="white-space: pre-wrap;">${text}</p>
+    </div>
+  `;
+
+  messagesContainer.appendChild(message);
+  message.scrollIntoView({ behavior: "smooth" });
+
+  composer.value = "";
+  composer.style.height = "auto";
+};
+
+export const receiveMessageSSE = (text: string, done = false) => {
+  const messagesContainer = document.querySelector(".messages");
+  if (!messagesContainer) return;
+
+  let message = messagesContainer.querySelector<HTMLElement>(
+    "[data-ai-streaming='true']",
+  );
+
+  if (!message) {
+    message = document.createElement("article");
+    message.className = "message assistant";
+    message.dataset.aiStreaming = "true";
+    message.innerHTML = `
+      <div class="message-meta">
+        <span class="badge">AI</span>
+      </div>
+      <div class="message-body">
+        <p style="white-space: pre-wrap;"></p>
+      </div>
+    `;
+
+    messagesContainer.appendChild(message);
+  }
+
+  const body = message.querySelector("p");
+  if (body) body.textContent = text;
+
+  if (done) {
+    delete message.dataset.aiStreaming;
+  }
+};
+```
+
+### 5) 타입 정의 분리
+
+- `src/scripts/share/type.ts`: 백엔드 응답에 대한 공통 데이터 모델
+- `src/scripts/features/ai-chat/type.ts`: OpenAI 요청에 필요한 데이터 모델
+
+```ts
+// src/scripts/share/type.ts
+export interface ResponseAPI<T> {
+  statusCode: number;
+  message: string;
+  data: T;
+}
+```
+
+```ts
+// src/scripts/features/ai-chat/type.ts
+export interface OpenAIResponseAPIModel {
+  model: string;
+  input: Array<Record<string, unknown>> | string;
+  instructions?: string;
+  stream?: boolean;
+  tools?: OpenAIToolsModel[];
+}
+```
+
+</details>
