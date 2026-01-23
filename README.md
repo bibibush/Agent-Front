@@ -12,3 +12,4 @@
 >
 > 백엔드는 fastapi와 openai 라이브러리로 구현했습니다.
 > 백엔드 구조는 클린 아키텍처를 적용 했습니다.
+> 백엔드 repo: https://github.com/bibibush/AgentOps
