@@ -206,4 +206,73 @@ export interface OpenAIResponseAPIModel {
 }
 ```
 
+<details>
+  <summary><b>스트리밍 응답 구현</b></summary>
+
+### 스트리밍 응답 구현
+
+`src/scripts/share/api.ts` 의 `requestStreamingAPI` 는 FastAPI 의 `data: {chunk}\n\n` 형식을
+라인 단위로 파싱해 `AsyncGenerator` 로 전달합니다.
+
+```ts
+const reader = response.body?.getReader();
+const decoder = new TextDecoder();
+
+if (!reader) {
+  throw new Error("Response body is null");
+}
+
+let buffer = "";
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  buffer += decoder.decode(value, { stream: true });
+  const lines = buffer.split("\n");
+  buffer = lines.pop() || "";
+
+  for (const line of lines) {
+    if (line.startsWith("data: ")) {
+      const data = line.slice(6);
+      yield data;
+    }
+  }
+}
+```
+
+이 함수는 `src/scripts/features/ai-chat/api.ts` 의 SSE 호출에서 사용됩니다.
+
+```ts
+export async function* getOpenaiResponseSSE(data: OpenAIResponseAPIModel) {
+  const stream = requestStreamingAPI(
+    `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/sse`,
+    { method: "POST", body: data },
+  );
+
+  for await (const chunk of stream) {
+    yield chunk;
+  }
+}
+```
+
+그리고 `src/scripts/features/ai-chat/hook.ts` 에서 스트리밍 결과를 받아 UI 를 갱신합니다.
+
+```ts
+const stream = getOpenaiResponseSSE({
+  model: "gpt-5.2",
+  input: text,
+  stream: true,
+});
+
+let aiResponse = "";
+
+for await (const chunk of stream) {
+  aiResponse += chunk;
+  receiveMessageSSE(aiResponse);
+}
+
+receiveMessageSSE(aiResponse, true);
+```
+
 </details>
