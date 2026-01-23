@@ -19,3 +19,27 @@
 
 - html, css, typescript
 - parcel
+
+## 프로젝트 구조
+
+```
+.
+├─ src/
+│  ├─ index.html            # 앱 마크업
+│  ├─ styles/
+│  │  └─ main.scss          # 전역 스타일
+│  └─ scripts/
+│     ├─ main.ts            # 엔트리, UI 이벤트 바인딩, ai-chat 초기화
+│     ├─ share/
+│     │  ├─ api.ts          # 공통 API 요청/스트리밍 유틸 + snake/camel 변환
+│     │  ├─ type.ts         # 공통 응답 타입
+│     │  └─ var.ts          # 공통 상수
+│     └─ features/
+│        └─ ai-chat/
+│           ├─ index.ts     # 전송 이벤트 연결
+│           ├─ hook.ts      # 메시지 전송 흐름(일반/SSE)
+│           ├─ api.ts       # AI 응답 API 호출
+│           ├─ ui.ts        # 채팅 UI 렌더링/스트리밍 표시
+│           └─ type.ts      # AI 요청 타입 정의
+└─ package.json
+```
