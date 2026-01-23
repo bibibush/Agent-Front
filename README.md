@@ -206,6 +206,8 @@ export interface OpenAIResponseAPIModel {
 }
 ```
 
+</details>
+<br />
 <details>
   <summary><b>스트리밍 응답 구현</b></summary>
 
