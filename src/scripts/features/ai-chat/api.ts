@@ -1,12 +1,12 @@
 import { requestAPI, requestStreamingAPI } from "../../share/api";
 import { ResponseAPI } from "../../share/type";
 import { OpenAIResponseAPIModel } from "./type";
-import { OPENAI_RESPONSE_PREFIX } from "../../share/var";
+import { OPENAI_RESPONSE_PREFIX, HOST, PORT } from "../../share/var";
 
 export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
   try {
     const response = await requestAPI<ResponseAPI<string>>(
-      `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/text`,
+      `http://${HOST}:${PORT}/${OPENAI_RESPONSE_PREFIX}/text`,
       {
         method: "POST",
         body: data,
@@ -22,7 +22,7 @@ export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
 export async function* getOpenaiResponseSSE(data: OpenAIResponseAPIModel) {
   try {
     const stream = requestStreamingAPI(
-      `http://localhost:8000/${OPENAI_RESPONSE_PREFIX}/sse`,
+      `http://${HOST}:${PORT}/${OPENAI_RESPONSE_PREFIX}/sse`,
       {
         method: "POST",
         body: data,
