@@ -1,3 +1,5 @@
+import { renderMarkdown } from "../../share/markdown";
+
 export const sendMessageUI = () => {
   const composer =
     document.querySelector<HTMLTextAreaElement>("[data-composer]");
@@ -34,10 +36,14 @@ export const receiveMessage = (text: string) => {
     <div class="message-meta">
       <span class="badge">AI</span>
     </div>
-    <div class="message-body">
-      <p style="white-space: pre-wrap;">${text}</p>
-    </div>
+    <div class="message-body"></div>
   `;
+
+  // 마크다운 렌더링 적용
+  const messageBody = message.querySelector(".message-body");
+  if (messageBody) {
+    messageBody.innerHTML = renderMarkdown(text);
+  }
 
   messagesContainer.appendChild(message);
   message.scrollIntoView({ behavior: "smooth" });
@@ -48,7 +54,7 @@ export const receiveMessageSSE = (text: string, done = false) => {
   if (!messagesContainer) return;
 
   let message = messagesContainer.querySelector<HTMLElement>(
-    "[data-ai-streaming='true']"
+    "[data-ai-streaming='true']",
   );
 
   if (!message) {
@@ -59,16 +65,17 @@ export const receiveMessageSSE = (text: string, done = false) => {
       <div class="message-meta">
         <span class="badge">AI</span>
       </div>
-      <div class="message-body">
-        <p style="white-space: pre-wrap;"></p>
-      </div>
+      <div class="message-body"></div>
     `;
 
     messagesContainer.appendChild(message);
   }
 
-  const body = message.querySelector("p");
-  if (body) body.textContent = text;
+  // 마크다운 렌더링 적용
+  const body = message.querySelector(".message-body");
+  if (body) {
+    body.innerHTML = renderMarkdown(text);
+  }
 
   if (done) {
     delete message.dataset.aiStreaming;

@@ -32,6 +32,7 @@
 │     ├─ main.ts            # 엔트리, UI 이벤트 바인딩, ai-chat 초기화
 │     ├─ share/
 │     │  ├─ api.ts          # 공통 API 요청/스트리밍 유틸 + snake/camel 변환
+│     │  ├─ markdown.ts     # 마크다운 렌더링
 │     │  ├─ type.ts         # 공통 응답 타입
 │     │  └─ var.ts          # 공통 상수
 │     └─ features/
