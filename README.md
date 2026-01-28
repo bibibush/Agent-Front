@@ -1,5 +1,7 @@
 # 지원자에게 무엇이든 물어봐! (진행중)
 
+## 사이트: https://d2lqi33nqmhm1k.cloudfront.net
+
 ## 소개
 
 > openai api, openai agents sdk를 활용한 ai서비스를 구현했습니다.
