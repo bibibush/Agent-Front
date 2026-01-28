@@ -21,6 +21,7 @@
 
 - html, css, typescript
 - parcel
+- s3, cloudFront
 
 ## 프로젝트 구조
 
@@ -278,6 +279,27 @@ for await (const chunk of stream) {
 }
 
 receiveMessageSSE(aiResponse, true);
+```
+
+</details>
+<br />
+<details>
+  <summary><b>DOMPurify 기반 XSS 방지</b></summary>
+
+### 마크다운 렌더링 시 XSS 공격 차단
+
+`src/scripts/share/markdown.ts` 에서 `marked`로 변환된 HTML을 `DOMPurify`로 새니타이징하여
+스크립트/이벤트 핸들러 삽입을 차단합니다. 허용 태그/속성을 제한하고, 오류 시에는
+원본 텍스트를 이스케이프 처리해 안전하게 렌더링합니다.
+
+```ts
+const rawHtml = marked.parse(markdown) as string;
+
+const safeHtml = DOMPurify.sanitize(rawHtml, {
+  ALLOWED_TAGS: ["p", "br", "strong", "em", "ul", "ol", "li", "code", "pre"],
+  ALLOWED_ATTR: ["href", "src", "alt", "title", "class"],
+  ALLOW_DATA_ATTR: false,
+});
 ```
 
 </details>
