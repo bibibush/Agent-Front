@@ -48,8 +48,39 @@
 └─ package.json
 ```
 
+## 사용 방법
+
+![페이지 스크린샷](assets/page_screenshot.png)
+
+채팅 입력창에 지원자에게 궁금한 내용을 자연스럽게 질문하면 됩니다.
+
 ## 핵심 로직
 
+<details>
+  <summary><b>textArea 높이 자동 조절</b></summary>
+
+### 입력 내용에 맞춰 textArea 높이를 자동 확장
+
+`src/scripts/main.ts`에서 입력 이벤트를 감지해 높이를 갱신합니다.
+입력 시 높이를 `"auto"`로 리셋한 뒤 `scrollHeight` 기준으로 확장하며,
+최대 높이는 200px로 제한합니다.
+
+```ts
+const composer = document.querySelector<HTMLTextAreaElement>("[data-composer]");
+
+const resizeComposer = () => {
+  if (!composer) return;
+  composer.style.height = "auto";
+  const nextHeight = Math.min(composer.scrollHeight, 200);
+  composer.style.height = `${nextHeight}px`;
+};
+
+composer?.addEventListener("input", resizeComposer);
+window.addEventListener("load", resizeComposer);
+```
+
+</details>
+<br />
 <details>
   <summary><b>FSD 패턴 적용</b></summary>
 
