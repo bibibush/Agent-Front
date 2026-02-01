@@ -1,5 +1,5 @@
 import { requestAPI, requestStreamingAPI } from "../../share/api";
-import { ResponseAPI } from "../../share/type";
+import { ResponseAPI, SSEEvent } from "../../share/type";
 import { OpenAIResponseAPIModel } from "./type";
 import { OPENAI_RESPONSE_PREFIX, HOST, PORT } from "../../share/var";
 
@@ -19,7 +19,9 @@ export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
   }
 }
 
-export async function* getOpenaiResponseSSE(data: OpenAIResponseAPIModel) {
+export async function* getOpenaiResponseSSE(
+  data: OpenAIResponseAPIModel,
+): AsyncGenerator<SSEEvent> {
   try {
     const stream = requestStreamingAPI(
       `https://${HOST}/${OPENAI_RESPONSE_PREFIX}/sse`,
@@ -29,8 +31,8 @@ export async function* getOpenaiResponseSSE(data: OpenAIResponseAPIModel) {
       },
     );
 
-    for await (const chunk of stream) {
-      yield chunk;
+    for await (const event of stream) {
+      yield event;
     }
   } catch (error) {
     throw error;

@@ -3,3 +3,7 @@ export interface ResponseAPI<T> {
   message: string;
   data: T;
 }
+
+export type SSEEvent =
+  | { type: "session"; data: string }
+  | { type: "data"; data: string };

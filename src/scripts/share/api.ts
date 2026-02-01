@@ -1,3 +1,5 @@
+import { SSEEvent } from "./type";
+
 type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
 type JsonObject = { [key: string]: JsonValue };
 
@@ -93,7 +95,7 @@ export const requestAPI = async <T>(
 export const requestStreamingAPI = async function* (
   url: string,
   { method = "POST", params, body, headers }: RequestApiOptions = {},
-): AsyncGenerator<string> {
+): AsyncGenerator<SSEEvent> {
   const requestUrl = new URL(url, window.location.origin);
 
   if (params) {
@@ -131,6 +133,7 @@ export const requestStreamingAPI = async function* (
   }
 
   let buffer = "";
+  let currentEventType: SSEEvent["type"] = "data";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -141,9 +144,13 @@ export const requestStreamingAPI = async function* (
     buffer = lines.pop() || "";
 
     for (const line of lines) {
-      if (line.startsWith("data: ")) {
+      if (line.startsWith("event: ")) {
+        const eventType = line.slice(7).trim();
+        currentEventType = eventType === "session" ? "session" : "data";
+      } else if (line.startsWith("data: ")) {
         const data = line.slice(6);
-        yield data;
+        yield { type: currentEventType, data };
+        currentEventType = "data";
       }
     }
   }
