@@ -1,6 +1,6 @@
 import { getOpenaiResponse, getOpenaiResponseSSE } from "./api";
 import { receiveMessage, receiveMessageSSE, sendMessageUI } from "./ui";
-import { getCurrentSessionId, setCurrentSessionId } from "./state";
+import { getCurrentSessionId, setCurrentSessionId } from "../../share/state";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -19,6 +19,7 @@ export const useSendMessage = async () => {
     const response = await getOpenaiResponse({
       model: "gpt-5.2",
       input: text,
+      sessionId: null,
     });
 
     receiveMessage(response.data);
@@ -30,7 +31,7 @@ export const useSendMessage = async () => {
   }
 };
 
-export const useSendMessageSSE = async (sessionId?: number) => {
+export const useSendMessageSSE = async (sessionId: number | null) => {
   if (IS_DEV) console.time("ai-chat-response-sse");
 
   const composer =
@@ -53,7 +54,7 @@ export const useSendMessageSSE = async (sessionId?: number) => {
 
     for await (const event of stream) {
       if (event.type === "session") {
-        setCurrentSessionId(event.data);
+        setCurrentSessionId(Number(event.data));
         if (IS_DEV) console.log("Session ID received:", event.data);
       } else {
         aiResponse += event.data;
