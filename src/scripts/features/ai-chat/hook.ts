@@ -31,7 +31,7 @@ export const useSendMessage = async () => {
   }
 };
 
-export const useSendMessageSSE = async (sessionId: number | null) => {
+export const useSendMessageSSE = async () => {
   if (IS_DEV) console.time("ai-chat-response-sse");
 
   const composer =
@@ -43,6 +43,7 @@ export const useSendMessageSSE = async (sessionId: number | null) => {
   sendMessageUI();
 
   try {
+    const sessionId = getCurrentSessionId();
     const stream = getOpenaiResponseSSE({
       model: "gpt-5.2",
       input: text,
