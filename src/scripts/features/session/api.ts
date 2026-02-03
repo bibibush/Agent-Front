@@ -1,7 +1,7 @@
 import { requestAPI } from "../../share/api";
 import { ResponseAPI } from "../../share/type";
 import { HOST } from "../../share/var";
-import { Session } from "./type";
+import { Session, User } from "./type";
 
 export async function getSessions(userId: number) {
   try {
@@ -12,6 +12,20 @@ export async function getSessions(userId: number) {
       },
     );
 
+    return response;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+export async function getUser() {
+  try {
+    const response = await requestAPI<ResponseAPI<User>>(
+      `https://${HOST}/user`,
+      {
+        method: "GET",
+      },
+    );
     return response;
   } catch (error) {
     return Promise.reject(error);
