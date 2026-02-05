@@ -10,6 +10,7 @@ export async function renderSessions(userId: number, container: HTMLElement) {
   }
 
   const sessions = response.data;
+  container.innerHTML = "";
 
   sessions.forEach((session) => {
     const sessionItem = createSessionItem({
