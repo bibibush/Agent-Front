@@ -31,3 +31,17 @@ export async function getUser() {
     return Promise.reject(error);
   }
 }
+
+export async function deleteSession(sessionId: number) {
+  try {
+    const response = await requestAPI<ResponseAPI<null>>(
+      `https://${HOST}/sessions/${sessionId}`,
+      {
+        method: "DELETE",
+      },
+    );
+    return response;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}

@@ -1,18 +1,63 @@
 import { ChatMessage } from "./type";
 import { renderMarkdown } from "../../share/markdown";
+import { deleteSession } from "./api";
 
 interface SessionItemProps {
   title: string;
+  sessionId: number;
   onClick?: () => void;
+  onDeleteSuccess?: () => void;
 }
 
 export function createSessionItem(props: SessionItemProps): HTMLLIElement {
-  const { title, onClick } = props;
+  const { title, sessionId, onClick, onDeleteSuccess } = props;
 
   const li = document.createElement("li");
   li.className = "chat-item";
   li.style.cursor = "pointer";
-  li.textContent = title;
+  li.style.display = "flex";
+  li.style.flexDirection = "row";
+  li.style.justifyContent = "space-between";
+  li.style.alignItems = "center";
+
+  const titleSpan = document.createElement("span");
+  titleSpan.textContent = title;
+  titleSpan.style.overflow = "hidden";
+  titleSpan.style.textOverflow = "ellipsis";
+  titleSpan.style.whiteSpace = "nowrap";
+  li.appendChild(titleSpan);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "delete-session-btn";
+  deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+  deleteButton.style.background = "none";
+  deleteButton.style.border = "none";
+  deleteButton.style.cursor = "pointer";
+  deleteButton.style.padding = "4px";
+  deleteButton.style.opacity = "0.6";
+  deleteButton.style.display = "flex";
+  deleteButton.style.alignItems = "center";
+  deleteButton.style.justifyContent = "center";
+  deleteButton.style.flexShrink = "0";
+
+  deleteButton.addEventListener("mouseenter", () => {
+    deleteButton.style.opacity = "1";
+  });
+  deleteButton.addEventListener("mouseleave", () => {
+    deleteButton.style.opacity = "0.6";
+  });
+
+  deleteButton.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    try {
+      await deleteSession(sessionId);
+      onDeleteSuccess?.();
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+    }
+  });
+
+  li.appendChild(deleteButton);
 
   if (onClick) {
     li.addEventListener("click", onClick);

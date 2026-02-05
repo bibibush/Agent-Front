@@ -15,8 +15,12 @@ export async function renderSessions(userId: number, container: HTMLElement) {
   sessions.forEach((session) => {
     const sessionItem = createSessionItem({
       title: session.title ?? "새 대화",
+      sessionId: session.id,
       onClick: () => {
         setMessages(session.messages);
+      },
+      onDeleteSuccess: () => {
+        renderSessions(userId, container);
       },
     });
     container.appendChild(sessionItem);
