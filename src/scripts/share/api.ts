@@ -1,3 +1,5 @@
+import { SSEEvent } from "./type";
+
 type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
 type JsonObject = { [key: string]: JsonValue };
 
@@ -93,7 +95,7 @@ export const requestAPI = async <T>(
 export const requestStreamingAPI = async function* (
   url: string,
   { method = "POST", params, body, headers }: RequestApiOptions = {},
-): AsyncGenerator<string> {
+): AsyncGenerator<SSEEvent> {
   const requestUrl = new URL(url, window.location.origin);
 
   if (params) {
@@ -131,19 +133,38 @@ export const requestStreamingAPI = async function* (
   }
 
   let buffer = "";
+  let currentEventType: SSEEvent["type"] = "data";
+  let currentDataLines: string[] = [];
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
+    const normalized = buffer.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    const lines = normalized.split("\n");
     buffer = lines.pop() || "";
 
     for (const line of lines) {
-      if (line.startsWith("data: ")) {
-        const data = line.slice(6);
-        yield data;
+      if (line === "") {
+        if (currentDataLines.length > 0) {
+          const data = currentDataLines.join("\n");
+          yield { type: currentEventType, data };
+        }
+        currentEventType = "data";
+        currentDataLines = [];
+        continue;
+      }
+
+      if (line.startsWith("event:")) {
+        const eventType = line.slice(6).trim();
+        currentEventType = eventType === "session" ? "session" : "data";
+        continue;
+      }
+
+      if (line.startsWith("data:")) {
+        const data = line.slice(5).trimStart();
+        currentDataLines.push(data);
       }
     }
   }
