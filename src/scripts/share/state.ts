@@ -1,8 +1,9 @@
-import { ChatMessage } from "../features/session/type";
+import { ChatMessage, User } from "../features/session/type";
 
 const stateManager = (() => {
   let currentSessionId: number | null = null;
   let messages: ChatMessage[] = [];
+  let user: User | null = null;
 
   return {
     getCurrentSessionId: () => currentSessionId,
@@ -13,6 +14,10 @@ const stateManager = (() => {
     setMessages: (newMessages: ChatMessage[]) => {
       messages = newMessages;
     },
+    getUserState: () => user,
+    setUser: (newUser: User | null) => {
+      user = newUser;
+    },
   };
 })();
 
@@ -21,4 +26,6 @@ export const {
   setCurrentSessionId,
   getMessages,
   setMessages,
+  getUserState,
+  setUser,
 } = stateManager;

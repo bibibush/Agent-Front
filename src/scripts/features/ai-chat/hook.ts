@@ -1,6 +1,11 @@
 import { getOpenaiResponse, getOpenaiResponseSSE } from "./api";
 import { receiveMessage, receiveMessageSSE, sendMessageUI } from "./ui";
-import { getCurrentSessionId, setCurrentSessionId } from "../../share/state";
+import {
+  getCurrentSessionId,
+  getUserState,
+  setCurrentSessionId,
+} from "../../share/state";
+import { renderSessions } from "../session/hook";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -44,6 +49,8 @@ export const useSendMessageSSE = async () => {
 
   try {
     const sessionId = getCurrentSessionId();
+    const isNewSession = sessionId === null;
+
     const stream = getOpenaiResponseSSE({
       model: "gpt-5.2",
       input: text,
@@ -64,6 +71,15 @@ export const useSendMessageSSE = async () => {
     }
 
     receiveMessageSSE(aiResponse, true);
+    if (isNewSession) {
+      const sessionContainer = document.querySelector<HTMLElement>(
+        "[data-session-list]",
+      );
+      const user = getUserState();
+      if (sessionContainer && user) {
+        await renderSessions(user.id, sessionContainer);
+      }
+    }
   } catch (error) {
     console.error("Failed to get AI response via SSE:", error);
     receiveMessage("죄송합니다. 응답을 받는 중 오류가 발생했습니다.");
