@@ -1,4 +1,4 @@
-import { setMessages } from "../../share/state";
+import { setCurrentSessionId, setMessages } from "../../share/state";
 import { getSessions } from "./api";
 import { createSessionItem } from "./ui";
 
@@ -21,6 +21,8 @@ export async function renderSessions(userId: number, container: HTMLElement) {
       },
       onDeleteSuccess: () => {
         renderSessions(userId, container);
+        setMessages([]);
+        setCurrentSessionId(null);
       },
     });
     container.appendChild(sessionItem);
