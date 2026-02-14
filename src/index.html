@@ -95,17 +95,30 @@
               data-composer
             ></textarea>
             <div class="composer-actions">
-              <button class="icon-pill" type="button" aria-label="Add">
-                <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
-                  <path
-                    d="M12 5v14M5 12h14"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </button>
+              <div class="dropdown-wrapper">
+                <button class="icon-pill" type="button" aria-label="Add" data-dropdown-trigger>
+                  <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                    <path
+                      d="M12 5v14M5 12h14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
+                <div class="dropdown-menu" data-dropdown-menu>
+                  <button class="dropdown-item" type="button">
+                    <svg class="dropdown-icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
+                      <path
+                        d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    <span>이미지</span>
+                  </button>
+                </div>
+              </div>
               <div class="right-actions">
                 <button class="send-button" type="button">전송</button>
               </div>

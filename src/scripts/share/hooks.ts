@@ -66,3 +66,51 @@ export const useSidebar = () => {
     window.removeEventListener("keydown", handleKeydown);
   };
 };
+
+/**
+ * 드롭다운 토글 훅
+ * 드롭다운 메뉴 열기/닫기 기능과 이벤트 리스너를 관리합니다
+ */
+export const useDropdown = () => {
+  const trigger = document.querySelector("[data-dropdown-trigger]");
+  const menu = document.querySelector("[data-dropdown-menu]");
+
+  const setDropdownOpen = (open: boolean) => {
+    if (!menu) return;
+    menu.classList.toggle("active", open);
+  };
+
+  // 드롭다운 토글 핸들러
+  const handleTriggerClick = (event: Event) => {
+    event.stopPropagation();
+    const isOpen = menu?.classList.contains("active");
+    setDropdownOpen(!isOpen);
+  };
+
+  // 외부 클릭 핸들러
+  const handleOutsideClick = (event: Event) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest("[data-dropdown-trigger]") && !target.closest("[data-dropdown-menu]")) {
+      setDropdownOpen(false);
+    }
+  };
+
+  // ESC 키 핸들러
+  const handleKeydown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      setDropdownOpen(false);
+    }
+  };
+
+  // 이벤트 리스너 등록
+  trigger?.addEventListener("click", handleTriggerClick);
+  document.addEventListener("click", handleOutsideClick);
+  window.addEventListener("keydown", handleKeydown);
+
+  // 클린업 함수 반환
+  return () => {
+    trigger?.removeEventListener("click", handleTriggerClick);
+    document.removeEventListener("click", handleOutsideClick);
+    window.removeEventListener("keydown", handleKeydown);
+  };
+};
