@@ -95,6 +95,44 @@ export const useImageUpload = () => {
   const fileInput = document.querySelector<HTMLInputElement>(
     "[data-image-file-input]",
   );
+  const composer = document.querySelector<HTMLTextAreaElement>(
+    "[data-composer]",
+  );
+  const composerInput = document.querySelector<HTMLElement>(
+    "[data-composer-input]",
+  );
+  const preview = document.querySelector<HTMLElement>("[data-image-preview]");
+  const previewImage = document.querySelector<HTMLImageElement>(
+    "[data-image-preview-img]",
+  );
+  const previewRemoveButton = document.querySelector<HTMLButtonElement>(
+    "[data-image-preview-remove]",
+  );
+  let previewUrl: string | null = null;
+
+  const syncComposerResize = () => {
+    composer?.dispatchEvent(new Event("input"));
+  };
+
+  const clearPreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+
+    if (previewImage) {
+      previewImage.removeAttribute("src");
+    }
+
+    preview?.setAttribute("hidden", "");
+    composerInput?.classList.remove("has-image-preview");
+
+    if (fileInput) {
+      fileInput.value = "";
+    }
+
+    syncComposerResize();
+  };
 
   const handleUploadTriggerClick = () => {
     if (!fileInput) return;
@@ -107,15 +145,48 @@ export const useImageUpload = () => {
     const file = target.files?.[0];
     if (!file) return;
 
+    const isSupportedImage =
+      file.type === "image/jpeg" || file.type === "image/png";
+
+    if (!isSupportedImage) {
+      if (IS_DEV) {
+        console.warn("Unsupported image file type:", file.type);
+      }
+      target.value = "";
+      return;
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    previewUrl = objectUrl;
+
+    if (previewImage) {
+      previewImage.src = objectUrl;
+    }
+    preview?.removeAttribute("hidden");
+    composerInput?.classList.add("has-image-preview");
+    syncComposerResize();
+
     if (IS_DEV) console.log("Selected image:", file.name);
+  };
+
+  const handlePreviewRemoveClick = () => {
+    clearPreview();
   };
 
   uploadTrigger?.addEventListener("click", handleUploadTriggerClick);
   fileInput?.addEventListener("change", handleFileChange);
+  previewRemoveButton?.addEventListener("click", handlePreviewRemoveClick);
 
   return () => {
+    clearPreview();
     uploadTrigger?.removeEventListener("click", handleUploadTriggerClick);
     fileInput?.removeEventListener("change", handleFileChange);
+    previewRemoveButton?.removeEventListener("click", handlePreviewRemoveClick);
   };
 };
 

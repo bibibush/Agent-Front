@@ -1,7 +1,6 @@
 import {
   useDropdown,
   useImageUpload,
-  useSendMessage,
   useSendMessageSSE,
 } from "./hook";
 
