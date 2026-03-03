@@ -52,7 +52,7 @@ export const useSendMessageSSE = async () => {
     const isNewSession = sessionId === null;
 
     const stream = getOpenaiResponseSSE({
-      model: "gpt-5.2",
+      model: "gpt-5.3-chat-latest",
       input: text,
       stream: true,
       sessionId,
@@ -95,9 +95,8 @@ export const useImageUpload = () => {
   const fileInput = document.querySelector<HTMLInputElement>(
     "[data-image-file-input]",
   );
-  const composer = document.querySelector<HTMLTextAreaElement>(
-    "[data-composer]",
-  );
+  const composer =
+    document.querySelector<HTMLTextAreaElement>("[data-composer]");
   const composerInput = document.querySelector<HTMLElement>(
     "[data-composer-input]",
   );
