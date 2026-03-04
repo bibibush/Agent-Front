@@ -38,6 +38,7 @@ export const useSendMessage = async () => {
       model: "gpt-5.2",
       input: text,
       sessionId: null,
+      mode: "architecture",
     });
 
     receiveMessage(response.data);
@@ -91,6 +92,7 @@ export const useSendMessageSSE = async () => {
       model: "gpt-5.3-chat-latest",
       input,
       stream: true,
+      mode: "architecture",
       sessionId,
     });
 

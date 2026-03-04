@@ -16,6 +16,7 @@ export interface OpenAIResponseAPIModel {
   input: Array<Record<string, unknown>> | string;
   instructions?: string;
   sessionId: number | null;
+  mode?: "architecture" | "frontend";
   stream?: boolean;
   tools?: OpenAIToolsModel[];
 }
