@@ -9,6 +9,19 @@ import { renderSessions } from "../session/hook";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
+let pendingImageFile: File | null = null;
+
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      resolve(dataUrl.slice(dataUrl.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(new Error("Failed to read image file"));
+    reader.readAsDataURL(file);
+  });
+
 export const useSendMessage = async () => {
   if (IS_DEV) console.time("ai-chat-response");
 
@@ -45,15 +58,38 @@ export const useSendMessageSSE = async () => {
 
   if (!text) return;
 
+  const imageFile = pendingImageFile;
+
   sendMessageUI();
+
+  if (imageFile) {
+    document
+      .querySelector<HTMLButtonElement>("[data-image-preview-remove]")
+      ?.click();
+  }
 
   try {
     const sessionId = getCurrentSessionId();
     const isNewSession = sessionId === null;
 
+    const input = imageFile
+      ? await fileToBase64(imageFile).then((base64) => [
+          {
+            role: "user",
+            content: [
+              { type: "input_text", text },
+              {
+                type: "input_image",
+                image_url: `data:${imageFile.type};base64,${base64}`,
+              },
+            ],
+          },
+        ])
+      : text;
+
     const stream = getOpenaiResponseSSE({
       model: "gpt-5.3-chat-latest",
-      input: text,
+      input,
       stream: true,
       sessionId,
     });
@@ -114,6 +150,8 @@ export const useImageUpload = () => {
   };
 
   const clearPreview = () => {
+    pendingImageFile = null;
+
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       previewUrl = null;
@@ -159,6 +197,8 @@ export const useImageUpload = () => {
       URL.revokeObjectURL(previewUrl);
       previewUrl = null;
     }
+
+    pendingImageFile = file;
 
     const objectUrl = URL.createObjectURL(file);
     previewUrl = objectUrl;
