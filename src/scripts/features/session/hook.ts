@@ -18,6 +18,7 @@ export async function renderSessions(userId: number, container: HTMLElement) {
       sessionId: session.id,
       onClick: () => {
         setMessages(session.messages);
+        setCurrentSessionId(session.id);
       },
       onDeleteSuccess: () => {
         renderSessions(userId, container);
