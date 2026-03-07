@@ -28,34 +28,32 @@
 ## 프로젝트 구조
 
 ```
-.
-├─ src/
-│  ├─ index.html            # 앱 마크업
-│  ├─ styles/
-│  │  └─ main.scss          # 전역 스타일
-│  └─ scripts/
-│     ├─ main.ts            # 엔트리, UI 이벤트 바인딩, 세션/채팅 초기화
-│     ├─ share/
-│     │  ├─ api.ts          # 공통 API 요청/스트리밍 유틸 + snake/camel 변환
-│     │  ├─ hooks.ts        # 사이드바 토글, composer 리사이즈 훅
-│     │  ├─ markdown.ts     # 마크다운 렌더링
-│     │  ├─ state.ts        # 클로저 기반 전역 상태 관리
-│     │  ├─ type.ts         # 공통 응답 타입 (ResponseAPI, SSEEvent)
-│     │  └─ var.ts          # 공통 상수
-│     └─ features/
-│        ├─ ai-chat/
-│        │  ├─ index.ts     # 전송 이벤트 연결
-│        │  ├─ hook.ts      # 메시지 전송 흐름(일반/SSE)
-│        │  ├─ api.ts       # AI 응답 API 호출
-│        │  ├─ ui.ts        # 채팅 UI 렌더링/스트리밍 표시
-│        │  └─ type.ts      # AI 요청 타입 정의
-│        └─ session/
-│           ├─ index.ts     # 세션 초기화 (유저 조회, 리스너 등록)
-│           ├─ hook.ts      # 세션 목록 렌더링
-│           ├─ api.ts       # 세션/유저 API 호출
-│           ├─ ui.ts        # 세션 아이템/메시지 렌더링
-│           └─ type.ts      # 세션 관련 타입 정의
-└─ package.json
+src/
+├─ index.html               # 앱 마크업
+├─ styles/
+│  └─ main.scss             # 전역 스타일
+└─ scripts/
+   ├─ main.ts               # 엔트리, UI 이벤트 바인딩, 세션/채팅 초기화
+   ├─ share/
+   │  ├─ api.ts             # 공통 API 요청/스트리밍 유틸 + snake/camel 변환
+   │  ├─ hooks.ts           # 사이드바/리사이즈 같은 공통 UI 훅
+   │  ├─ markdown.ts        # 마크다운 렌더링 + sanitize
+   │  ├─ state.ts           # 클로저 기반 전역 상태 관리
+   │  ├─ type.ts            # 공통 응답 타입 (ResponseAPI, SSEEvent)
+   │  └─ var.ts             # 공통 상수
+   └─ features/
+      ├─ ai-chat/
+      │  ├─ api.ts          # AI 응답 API 호출
+      │  ├─ hook.ts         # 메시지 전송(SSE) + 이미지 업로드 처리
+      │  ├─ index.ts        # 채팅 기능 초기화/이벤트 연결
+      │  ├─ type.ts         # AI 요청 타입 정의
+      │  └─ ui.ts           # 채팅 UI 렌더링/스트리밍 표시
+      └─ session/
+         ├─ api.ts          # 세션/유저 API 호출
+         ├─ hook.ts         # 세션 목록 렌더링
+         ├─ index.ts        # 세션 초기화 (유저 조회, 리스너 등록)
+         ├─ type.ts         # 세션 관련 타입 정의
+         └─ ui.ts           # 세션 아이템/메시지 렌더링
 ```
 
 ## 사용 방법
