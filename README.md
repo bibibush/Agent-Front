@@ -10,6 +10,8 @@
 >
 > 프론트엔드는 html, scss, typescript로 구성된 일반적인 ssg 방식의 프로젝트 형태를 띄고 있고, 번들링 라이브러리로는 parcel을 선택했습니다.
 >
+> 이 프로젝트는 프레임워크에 포함된 편의 기능에 의존하기보다, DOM 제어·이벤트 처리·API 통신 같은 프론트엔드 기본기만으로 기능을 구현하는 데 집중했습니다. 이를 통해 프론트엔드 동작 원리를 더 정확히 이해하고 기본기를 의도적으로 연습하고자 했습니다.
+>
 > 간단한 UI이지만, 아키텍처 적용 학습을 위해 feature-sliced-design (FSD) 패턴을 적용한 프로젝트 구조를 설계 했습니다.
 >
 > 백엔드는 fastapi와 openai 라이브러리로 구현했습니다.
@@ -391,6 +393,146 @@ if (isNewSession) {
 </details>
 <br />
 <details>
+  <summary><b>이미지 분석 기능</b></summary>
+
+### 이미지 업로드 + 미리보기 + base64 변환 전송
+
+`src/scripts/features/ai-chat/hook.ts` 에서 이미지 선택/미리보기/삭제와 전송 시 변환까지 한 흐름으로 처리합니다.
+`jpeg`, `png` 파일만 허용하고, 선택한 이미지는 전송 전에 base64로 변환해 `input_image` 포맷으로 API에 전달합니다.
+
+### 1) 이미지 업로드 트리거와 미리보기 영역
+
+`src/index.html` 에 업로드 버튼, 파일 input, 미리보기 DOM을 두고
+`src/scripts/features/ai-chat/index.ts` 에서 `useImageUpload()` 훅을 초기화합니다.
+
+```ts
+// src/scripts/features/ai-chat/index.ts
+export const initAiChat = () => {
+  const composer =
+    document.querySelector<HTMLTextAreaElement>("[data-composer]");
+  const sendButton = document.querySelector(".send-button");
+
+  useDropdown();
+  useImageUpload();
+  sendButton?.addEventListener("click", useSendMessageSSE);
+
+  composer?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      useSendMessageSSE();
+    }
+  });
+};
+```
+
+```html
+<!-- src/index.html -->
+<button class="dropdown-item" type="button" data-image-upload-trigger>
+  <span>이미지</span>
+</button>
+<input
+  type="file"
+  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+  hidden
+  data-image-file-input
+/>
+
+<div class="composer-image-preview" data-image-preview hidden>
+  <img alt="Selected preview" data-image-preview-img />
+  <button type="button" data-image-preview-remove></button>
+</div>
+```
+
+### 2) 이미지 선택 시 미리보기 표시
+
+`useImageUpload()` 에서 파일 타입을 검증한 뒤 `URL.createObjectURL()` 로 미리보기를 표시합니다.
+이미지 제거 버튼 클릭 시 `URL.revokeObjectURL()` 로 URL을 해제하고 미리보기를 초기화합니다.
+
+```ts
+let pendingImageFile: File | null = null;
+let previewUrl: string | null = null;
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const isSupportedImage =
+    file.type === "image/jpeg" || file.type === "image/png";
+  if (!isSupportedImage) {
+    target.value = "";
+    return;
+  }
+
+  if (previewUrl) {
+    URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+  }
+
+  pendingImageFile = file;
+  const objectUrl = URL.createObjectURL(file);
+  previewUrl = objectUrl;
+
+  if (previewImage) {
+    previewImage.src = objectUrl;
+  }
+  preview?.removeAttribute("hidden");
+  composerInput?.classList.add("has-image-preview");
+};
+```
+
+### 3) 전송 시 이미지 base64 변환 + 멀티모달 input 구성
+
+이미지가 첨부된 경우 `FileReader.readAsDataURL()` 결과에서 base64 본문만 추출하고,
+`input_text` + `input_image` 배열 형태로 SSE 요청을 보냅니다.
+전송 직전에 미리보기 제거 버튼을 호출해 UI 상태를 정리합니다.
+
+```ts
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      resolve(dataUrl.slice(dataUrl.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(new Error("Failed to read image file"));
+    reader.readAsDataURL(file);
+  });
+
+const imageFile = pendingImageFile;
+if (imageFile) {
+  document
+    .querySelector<HTMLButtonElement>("[data-image-preview-remove]")
+    ?.click();
+}
+
+const input = imageFile
+  ? await fileToBase64(imageFile).then((base64) => [
+      {
+        role: "user",
+        content: [
+          { type: "input_text", text },
+          {
+            type: "input_image",
+            image_url: `data:${imageFile.type};base64,${base64}`,
+          },
+        ],
+      },
+    ])
+  : text;
+
+const stream = getOpenaiResponseSSE({
+  model: "gpt-5.3-chat-latest",
+  input,
+  stream: true,
+  mode: "architecture",
+  sessionId,
+});
+```
+
+</details>
+<br />
+<details>
   <summary><b>DOMPurify 기반 XSS 방지</b></summary>
 
 ### 마크다운 렌더링 시 XSS 공격 차단
@@ -404,11 +546,33 @@ const rawHtml = marked.parse(markdown) as string;
 
 const safeHtml = DOMPurify.sanitize(rawHtml, {
   ALLOWED_TAGS: [
-    "p", "br", "strong", "em", "u", "s", "del",
-    "h1", "h2", "h3", "h4", "h5", "h6",
-    "ul", "ol", "li", "blockquote",
-    "pre", "code", "a", "hr",
-    "table", "thead", "tbody", "tr", "th", "td",
+    "p",
+    "br",
+    "strong",
+    "em",
+    "u",
+    "s",
+    "del",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "ul",
+    "ol",
+    "li",
+    "blockquote",
+    "pre",
+    "code",
+    "a",
+    "hr",
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
   ],
   ALLOWED_ATTR: ["href", "src", "alt", "title", "class"],
   ALLOW_DATA_ATTR: false,
@@ -673,4 +837,4 @@ export interface User {
 
 > 아직 프로젝트 진행중이며, 아래 항목은 다음 단계에서 개선할 예정입니다.
 
-- 이미지 및 툴 사용 기능 추가
+- 툴 사용 기능 추가
