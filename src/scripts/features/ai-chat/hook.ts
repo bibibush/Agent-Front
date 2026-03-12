@@ -92,7 +92,7 @@ export const useSendMessageSSE = async () => {
       model: "gpt-5.3-chat-latest",
       input,
       stream: true,
-      mode: "architecture",
+      mode: "frontend",
       sessionId,
     });
 
