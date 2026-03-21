@@ -1,5 +1,11 @@
 import { getOpenaiResponse, getOpenaiResponseSSE } from "./api";
-import { receiveMessage, receiveMessageSSE, sendMessageUI } from "./ui";
+import {
+  receiveMessage,
+  receiveMessageSSE,
+  removeTypingIndicator,
+  sendMessageUI,
+  showTypingIndicator,
+} from "./ui";
 import {
   getCurrentSessionId,
   getUserState,
@@ -59,9 +65,18 @@ export const useSendMessageSSE = async () => {
 
   if (!text) return;
 
+  const sendButton =
+    document.querySelector<HTMLButtonElement>(".send-button");
+  const addButton =
+    document.querySelector<HTMLButtonElement>("[data-dropdown-trigger]");
+
+  sendButton?.setAttribute("disabled", "");
+  addButton?.setAttribute("disabled", "");
+
   const imageFile = pendingImageFile;
 
   sendMessageUI();
+  showTypingIndicator();
 
   if (imageFile) {
     document
@@ -103,6 +118,7 @@ export const useSendMessageSSE = async () => {
         setCurrentSessionId(Number(event.data));
         if (IS_DEV) console.log("Session ID received:", event.data);
       } else {
+        if (!aiResponse) removeTypingIndicator();
         aiResponse += event.data;
         receiveMessageSSE(aiResponse);
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -123,6 +139,9 @@ export const useSendMessageSSE = async () => {
     console.error("Failed to get AI response via SSE:", error);
     receiveMessage("죄송합니다. 응답을 받는 중 오류가 발생했습니다.");
   } finally {
+    removeTypingIndicator();
+    sendButton?.removeAttribute("disabled");
+    addButton?.removeAttribute("disabled");
     if (IS_DEV) console.timeEnd("ai-chat-response-sse");
   }
 };

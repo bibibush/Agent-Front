@@ -1,5 +1,12 @@
 import { renderMarkdown } from "../../share/markdown";
 
+const isNearBottom = (el: Element, threshold = 100): boolean =>
+  el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+
+const scrollToBottom = (el: Element) => {
+  el.scrollTop = el.scrollHeight;
+};
+
 export const sendMessageUI = () => {
   const composer =
     document.querySelector<HTMLTextAreaElement>("[data-composer]");
@@ -20,7 +27,11 @@ export const sendMessageUI = () => {
   `;
 
   messagesContainer.appendChild(message);
-  message.scrollIntoView({ behavior: "smooth" });
+
+  const scrollContainer = messagesContainer.closest(".chat");
+  if (scrollContainer) {
+    scrollToBottom(scrollContainer);
+  }
 
   composer.value = "";
   composer.style.height = "auto";
@@ -46,7 +57,38 @@ export const receiveMessage = (text: string) => {
   }
 
   messagesContainer.appendChild(message);
-  message.scrollIntoView({ behavior: "smooth" });
+
+  const scrollContainer = messagesContainer.closest(".chat");
+  if (scrollContainer) {
+    scrollToBottom(scrollContainer);
+  }
+};
+
+export const showTypingIndicator = () => {
+  const messagesContainer = document.querySelector(".messages");
+  if (!messagesContainer) return;
+
+  const indicator = document.createElement("article");
+  indicator.className = "message assistant";
+  indicator.dataset.typingIndicator = "true";
+  indicator.innerHTML = `
+    <div class="message-meta"><span class="badge">AI</span></div>
+    <div class="message-body">
+      <div class="typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  `;
+  messagesContainer.appendChild(indicator);
+
+  const scrollContainer = messagesContainer.closest(".chat");
+  if (scrollContainer) {
+    scrollToBottom(scrollContainer);
+  }
+};
+
+export const removeTypingIndicator = () => {
+  document.querySelector("[data-typing-indicator='true']")?.remove();
 };
 
 export const receiveMessageSSE = (text: string, done = false) => {
@@ -81,5 +123,8 @@ export const receiveMessageSSE = (text: string, done = false) => {
     delete message.dataset.aiStreaming;
   }
 
-  message.scrollIntoView({ behavior: "smooth" });
+  const scrollContainer = messagesContainer.closest(".chat");
+  if (scrollContainer && isNearBottom(scrollContainer)) {
+    scrollToBottom(scrollContainer);
+  }
 };
