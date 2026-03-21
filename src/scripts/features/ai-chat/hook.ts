@@ -105,6 +105,7 @@ export const useSendMessageSSE = async () => {
       } else {
         aiResponse += event.data;
         receiveMessageSSE(aiResponse);
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       }
     }
 

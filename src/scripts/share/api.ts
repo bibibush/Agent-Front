@@ -163,7 +163,8 @@ export const requestStreamingAPI = async function* (
       }
 
       if (line.startsWith("data:")) {
-        const data = line.slice(5).trimStart();
+        const raw = line.slice(5);
+        const data = raw.startsWith(" ") ? raw.slice(1) : raw;
         currentDataLines.push(data);
       }
     }
