@@ -8,6 +8,8 @@ import {
 } from "./ui";
 import {
   getCurrentSessionId,
+  getCurrentModel,
+  setCurrentModel,
   getUserState,
   setCurrentSessionId,
 } from "../../share/state";
@@ -104,7 +106,7 @@ export const useSendMessageSSE = async () => {
       : text;
 
     const stream = getOpenaiResponseSSE({
-      model: "gpt-5.3-chat-latest",
+      model: getCurrentModel(),
       input,
       stream: true,
       mode: "frontend",
@@ -248,6 +250,39 @@ export const useImageUpload = () => {
     uploadTrigger?.removeEventListener("click", handleUploadTriggerClick);
     fileInput?.removeEventListener("change", handleFileChange);
     previewRemoveButton?.removeEventListener("click", handlePreviewRemoveClick);
+  };
+};
+
+export const useModelSelect = () => {
+  const submenu = document.querySelector("[data-model-submenu]");
+  const menu = document.querySelector("[data-dropdown-menu]");
+
+  const updateCheckIcons = (selectedModel: string) => {
+    const options = submenu?.querySelectorAll("[data-model-option]");
+    options?.forEach((option) => {
+      const model = option.getAttribute("data-model-option");
+      option.classList.toggle("active", model === selectedModel);
+    });
+  };
+
+  const handleModelClick = (event: Event) => {
+    const target = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-model-option]",
+    );
+    if (!target) return;
+
+    const model = target.getAttribute("data-model-option");
+    if (!model) return;
+
+    setCurrentModel(model);
+    updateCheckIcons(model);
+    menu?.classList.remove("active");
+  };
+
+  submenu?.addEventListener("click", handleModelClick);
+
+  return () => {
+    submenu?.removeEventListener("click", handleModelClick);
   };
 };
 

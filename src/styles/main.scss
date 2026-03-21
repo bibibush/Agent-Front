@@ -662,6 +662,57 @@ textarea::placeholder {
   flex-shrink: 0;
 }
 
+.has-submenu {
+  position: relative;
+  justify-content: flex-start;
+}
+
+.dropdown-arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.dropdown-submenu {
+  position: absolute;
+  left: calc(100% + 4px);
+  bottom: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  min-width: 140px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  z-index: 11;
+}
+
+.has-submenu:hover > .dropdown-submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.dropdown-submenu .dropdown-item {
+  justify-content: space-between;
+}
+
+.check-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+  flex-shrink: 0;
+  display: none;
+}
+
+.dropdown-submenu .dropdown-item.active .check-icon {
+  display: block;
+}
+
 .icon-pill {
   width: 40px;
   height: 40px;

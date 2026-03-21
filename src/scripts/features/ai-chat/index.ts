@@ -1,6 +1,7 @@
 import {
   useDropdown,
   useImageUpload,
+  useModelSelect,
   useSendMessageSSE,
 } from "./hook";
 
@@ -11,6 +12,7 @@ export const initAiChat = () => {
 
   useDropdown();
   useImageUpload();
+  useModelSelect();
   sendButton?.addEventListener("click", useSendMessageSSE);
 
   composer?.addEventListener("keydown", (e) => {

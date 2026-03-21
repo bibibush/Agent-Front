@@ -4,6 +4,7 @@ const stateManager = (() => {
   let currentSessionId: number | null = null;
   let messages: ChatMessage[] = [];
   let user: User | null = null;
+  let currentModel: string = "gpt-5.3-chat-latest";
   const messagesListeners: Array<(messages: ChatMessage[]) => void> = [];
 
   return {
@@ -19,6 +20,10 @@ const stateManager = (() => {
     getUserState: () => user,
     setUser: (newUser: User | null) => {
       user = newUser;
+    },
+    getCurrentModel: () => currentModel,
+    setCurrentModel: (model: string) => {
+      currentModel = model;
     },
     addMessagesListener: (listener: (messages: ChatMessage[]) => void) => {
       messagesListeners.push(listener);
@@ -41,4 +46,6 @@ export const {
   setUser,
   addMessagesListener,
   removeMessagesListener,
+  getCurrentModel,
+  setCurrentModel,
 } = stateManager;
