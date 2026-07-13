@@ -67,10 +67,10 @@ export const useSendMessageSSE = async () => {
 
   if (!text) return;
 
-  const sendButton =
-    document.querySelector<HTMLButtonElement>(".send-button");
-  const addButton =
-    document.querySelector<HTMLButtonElement>("[data-dropdown-trigger]");
+  const sendButton = document.querySelector<HTMLButtonElement>(".send-button");
+  const addButton = document.querySelector<HTMLButtonElement>(
+    "[data-dropdown-trigger]",
+  );
 
   sendButton?.setAttribute("disabled", "");
   addButton?.setAttribute("disabled", "");
@@ -109,7 +109,7 @@ export const useSendMessageSSE = async () => {
       model: getCurrentModel(),
       input,
       stream: true,
-      mode: "frontend",
+      mode: "architecture",
       sessionId,
     });
 
@@ -123,7 +123,9 @@ export const useSendMessageSSE = async () => {
         if (!aiResponse) removeTypingIndicator();
         aiResponse += event.data;
         receiveMessageSSE(aiResponse);
-        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        );
       }
     }
 
