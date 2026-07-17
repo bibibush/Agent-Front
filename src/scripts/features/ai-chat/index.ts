@@ -16,6 +16,7 @@ export const initAiChat = () => {
   sendButton?.addEventListener("click", useSendMessageSSE);
 
   composer?.addEventListener("keydown", (e) => {
+    if (e.isComposing) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       useSendMessageSSE();
