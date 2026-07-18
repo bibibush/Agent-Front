@@ -1,12 +1,12 @@
 import { requestAPI } from "../../share/api";
 import { ResponseAPI } from "../../share/type";
-import { HOST } from "../../share/var";
+import { HOST, PORT } from "../../share/var";
 import { Session, User } from "./type";
 
 export async function getSessions(userId: number) {
   try {
     const response = await requestAPI<ResponseAPI<Session[]>>(
-      `https://${HOST}/sessions/${userId}`,
+      `https://${HOST}:${PORT}/sessions/${userId}`,
       {
         method: "GET",
       },
@@ -21,7 +21,7 @@ export async function getSessions(userId: number) {
 export async function getUser() {
   try {
     const response = await requestAPI<ResponseAPI<User>>(
-      `https://${HOST}/user`,
+      `https://${HOST}:${PORT}/user`,
       {
         method: "GET",
       },
@@ -35,7 +35,7 @@ export async function getUser() {
 export async function deleteSession(sessionId: number) {
   try {
     const response = await requestAPI<ResponseAPI<null>>(
-      `https://${HOST}/sessions/${sessionId}`,
+      `https://${HOST}:${PORT}/sessions/${sessionId}`,
       {
         method: "DELETE",
       },

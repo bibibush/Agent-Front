@@ -6,7 +6,7 @@ import { OPENAI_RESPONSE_PREFIX, HOST, PORT } from "../../share/var";
 export async function getOpenaiResponse(data: OpenAIResponseAPIModel) {
   try {
     const response = await requestAPI<ResponseAPI<string>>(
-      `https://${HOST}/${OPENAI_RESPONSE_PREFIX}/text`,
+      `https://${HOST}:${PORT}/${OPENAI_RESPONSE_PREFIX}/text`,
       {
         method: "POST",
         body: data,
@@ -24,7 +24,7 @@ export async function* getOpenaiResponseSSE(
 ): AsyncGenerator<SSEEvent> {
   try {
     const stream = requestStreamingAPI(
-      `https://${HOST}/${OPENAI_RESPONSE_PREFIX}/sse`,
+      `https://${HOST}:${PORT}/${OPENAI_RESPONSE_PREFIX}/sse`,
       {
         method: "POST",
         body: data,
